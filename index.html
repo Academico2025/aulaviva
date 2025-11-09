@@ -67,18 +67,43 @@
     </style>
 </head>
 <body>
+    <!-- Sonido de bienvenida -->
+    <audio id="welcome-sound" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_38b15256a3.mp3?filename=success-1-6297.mp3" preload="auto"></audio>
+
     <div class="container">
         <h1>Plataforma de Bots Escolares</h1>
-<h3>DISRUPCIÓN DIGITAL Y SU IMPACTO EN LA EDUCACIÓN UNAD 2025 </h3>
+        <h3>DISRUPCIÓN DIGITAL Y SU IMPACTO EN LA EDUCACIÓN UNAD 2025</h3>
         <h3>Yesenia Muñoz Ruiz</h3>
         <p>Elige tu bot favorito y aprende mientras te diviertes 😄</p>
         <ul>
-            <li><a href="NaturaBotEscolar/index2.html"><span class="emoji">🌳</span> NaturaBotEscolar</a></li>
-            <li><a href="EticoBotEscolar/index2.html"><span class="emoji">🤝</span> EticoBotEscolar</a></li>
-            <li><a href="InglesBotEscolar/index.html"><span class="emoji">🇬🇧</span> InglésBotEscolar</a></li>
-            <li><a href="MatBotEscolar/index2.html"><span class="emoji">🔢</span> MatBotEscolar</a></li>
-            <li><a href="LenguBotEscolar/index2.html"><span class="emoji">📚</span> LenguBotEscolar</a></li>
+            <li><a href="NaturaBotEscolar/index2.html" data-title="Natura Bot Escolar"><span class="emoji">🌳</span> NaturaBotEscolar</a></li>
+            <li><a href="EticoBotEscolar/index2.html" data-title="Ético Bot Escolar"><span class="emoji">🤝</span> EticoBotEscolar</a></li>
+            <li><a href="InglesBotEscolar/index.html" data-title="Inglés Bot Escolar"><span class="emoji">🇬🇧</span> InglésBotEscolar</a></li>
+            <li><a href="MatBotEscolar/index2.html" data-title="Matemáticas Bot Escolar"><span class="emoji">🔢</span> MatBotEscolar</a></li>
+            <li><a href="LenguBotEscolar/index2.html" data-title="Lengua Bot Escolar"><span class="emoji">📚</span> LenguBotEscolar</a></li>
         </ul>
     </div>
- </body>
+
+    <script>
+        // Reproducir sonido de bienvenida al cargar la página
+        window.addEventListener('load', () => {
+            const sound = document.getElementById('welcome-sound');
+            sound.play().catch(() => {
+                console.log("El sonido se reproducirá al interactuar con la página (bloqueo del navegador).");
+            });
+        });
+
+        // Configurar lectura de botones con voz
+        const links = document.querySelectorAll('a');
+        links.forEach(link => {
+            link.addEventListener('mouseenter', () => {
+                const texto = link.getAttribute('data-title');
+                const utterance = new SpeechSynthesisUtterance(texto);
+                utterance.lang = 'es-ES';
+                utterance.rate = 1;
+                speechSynthesis.speak(utterance);
+            });
+        });
+    </script>
+</body>
 </html>
