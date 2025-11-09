@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>NaturaBot Escolar • Ciencias Naturales (1.º–5.º)</title>
+  <meta name="theme-color" content="#3CB371" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    :root{
+      --green:#2ecc71; /* botones primarios */
+      --green-dark:#27ae60; /* hover */
+      --yellow:#f1c40f; /* acentos */
+      --orange:#ff8f3d; /* header/badges */
+      --sky:#56ccf2; /* secundarios */
+      --ink:#214138; /* texto oscuro */
+      --bg:linear-gradient(135deg,#bbf7d0 0%, #fef08a 50%, #ffd1a3 100%);
+      --shadow:0 8px 24px rgba(0,0,0,.15);
+      --radius:18px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{margin:0; font-family:Poppins,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial,sans-serif; color:var(--ink); background:var(--bg); display:flex; flex-direction:column}
+    header{position:sticky; top:0; z-index:5; backdrop-filter:saturate(140%) blur(6px); background:linear-gradient(90deg,var(--orange), #ffb973); color:white; padding:.9rem 1rem; box-shadow:var(--shadow); display:flex; align-items:center; gap:.8rem; justify-content:space-between}
+    .brand{display:flex; align-items:center; gap:.75rem}
+    .bot-face{width:46px; height:46px; border-radius:50%; background:white; color:var(--orange); display:grid; place-items:center; font-weight:800; box-shadow:0 4px 10px rgba(0,0,0,.15)}
+    h1{font-size:clamp(1.05rem, 2.8vw, 1.35rem); margin:0; font-weight:800}
+    .subtitle{font-size:.8rem; margin:0; opacity:.95}
+    .shell{display:grid; grid-template-rows:auto 1fr auto; gap:10px; height:calc(100% - 78px); padding:10px}
+    .card{background:#fff; border-radius:var(--radius); box-shadow:var(--shadow)}
+    .toolbar{display:grid; grid-template-columns:1fr auto; gap:10px}
+    .toolbar .left, .toolbar .right{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
+    select, input[type="text"], input[type="password"], button{font-family:inherit; font-weight:600}
+    .sel, .txt{border:2px solid #e6e6e6; padding:.8rem .9rem; border-radius:14px; background:white; min-width:130px}
+    .txt{min-width:200px}
+    .btn{background:var(--green); color:white; border:0; padding:.85rem 1rem; border-radius:14px; box-shadow:0 6px 10px rgba(46,204,113,.35); cursor:pointer}
+    .btn.secondary{background:var(--sky); box-shadow:0 6px 10px rgba(86,204,242,.35)}
+    .btn.warn{background:var(--orange)}
+    .btn:active{transform:translateY(1px)}
+    .panels{display:grid; grid-template-columns: 290px 1fr; gap:10px; height:100%}
+    @media (max-width:980px){ .panels{grid-template-columns:1fr} }
+    .side{padding:10px; overflow:auto}
+    .badge{display:inline-block; background:#fff0c2; color:#7a4c00; padding:.25rem .55rem; border-radius:999px; font-size:.75rem; font-weight:700}
+    .block{background:#fff8ed; border-radius:14px; padding:.8rem; margin:.6rem 0}
+    .dba-list{display:flex; flex-direction:column; gap:.5rem}
+    .dba-item{background:#f0ffef; border:1px dashed #b6e7b5; padding:.6rem .7rem; border-radius:12px; font-size:.92rem}
+    .work{display:grid; grid-template-rows: 56% 44%; gap:10px; height:100%}
+    @media (max-height:720px){ .work{grid-template-rows: 52% 48%} }
+    .chat{display:flex; flex-direction:column; overflow:hidden}
+    .chat-head{display:flex; align-items:center; justify-content:space-between; padding:.65rem .9rem; border-bottom:1px solid #f0f0f0}
+    .chat-body{flex:1; padding:.8rem; overflow:auto; background:linear-gradient(180deg,#ffffff 0,#fffef7 100%); border-bottom-left-radius:var(--radius); border-bottom-right-radius:var(--radius)}
+    .msg{max-width:86%; margin:.35rem 0; padding:.7rem .9rem; border-radius:16px; box-shadow:0 2px 6px rgba(0,0,0,.08); font-size:1rem}
+    .msg.ai{background:#ecfff2}
+    .msg.user{background:#eaf5ff; margin-left:auto}
+    .inputer{display:flex; gap:.5rem; padding:.6rem; border-top:1px solid #f0f0f0}
+    .inputer input{flex:1}
+    .exo{display:grid; grid-template-columns: 1.1fr .9fr; gap:10px; padding:8px; overflow:auto}
+    @media (max-width:980px){ .exo{grid-template-columns:1fr} }
+    .exo .pane{padding:10px; overflow:auto}
+    .q{font-weight:700}
+    .opt{display:grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap:8px; margin-top:8px}
+    .opt button{background:#fff; border:2px solid #eaeaea; border-radius:12px; padding:.75rem; cursor:pointer}
+    .opt button.correct{border-color:#2ecc71; background:#e9fff3}
+    .opt button.wrong{border-color:#e74c3c; background:#ffe9e9}
+    .score{font-weight:800; color:var(--green-dark)}
+    .kudos{font-size:.95rem; background:#fff9c4; padding:.6rem .8rem; border-radius:12px; display:inline-flex; gap:.5rem; align-items:center}
+    .footer{display:flex; gap:.6rem; align-items:center; justify-content:space-between; padding:.6rem .8rem}
+    .small{font-size:.82rem; opacity:.8}
+    .pill{display:inline-flex; align-items:center; gap:.4rem; padding:.35rem .6rem; border-radius:999px; background:#e6fff1; color:#0f5132; font-weight:700; font-size:.8rem}
+    .status-dot{width:10px; height:10px; border-radius:50%}
+    .ok{background:#2ecc71}.err{background:#e74c3c}.off{background:#bdc3c7}
+    .visually-hidden{position:absolute !important; clip:rect(1px,1px,1px,1px); padding:0; border:0; height:1px; width:1px; overflow:hidden}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <div class="bot-face">🧪</div>
+      <div>
+        <h1>NaturaBot Escolar</h1>
+        <p class="subtitle">Ciencias Naturales • Primaria (1.º–5.º)</p>
+      </div>
+    </div>
+    <div class="pill" id="connPill"><span class="status-dot off" id="connDot"></span><span id="connText">Modo: Offline</span></div>
+  </header>
+  <div class="shell">
+    <!-- Toolbar -->
+    <div class="toolbar card" style="padding:10px">
+      <div class="left">
+        <label class="visually-hidden" for="gradoSel">Grado</label>
+        <select id="gradoSel" class="sel" title="Grado">
+          <option value="1">1.º</option>
+          <option value="2">2.º</option>
+          <option value="3">3.º</option>
+          <option value="4">4.º</option>
+          <option value="5">5.º</option>
+        </select>
+        <label class="visualmente-hidden" for="modoSel">Modo</label>
+        <select id="modoSel" class="sel" title="Modo">
+          <option value="offline">Offline (local)</option>
+          <option value="online">Online (IA)</option>
+        </select>
+        <button id="vozBtn" class="btn secondary" title="Leer en voz alta">🔊 Voz</button>
+        <button id="vozStop" class="btn" title="Detener voz">⏹️</button>
+        <button id="micBtn" class="btn warn" title="Hablar">🎙️</button>
+      </div>
+      <div class="right">
+        <select id="provSel" class="sel" title="Proveedor IA">
+          <option value="gemini">Gemini</option>
+          <option value="openai">OpenAI</option>
+        </select>
+        <input id="modelIn" class="txt" placeholder="Modelo (p.ej. gemini-2.0, gpt-4o-mini)" />
+        <input id="apiKeyIn" type="password" class="txt" placeholder="API Key" />
+        <button id="testBtn" class="btn">Probar IA</button>
+      </div>
+    </div>
+    <!-- Panels -->
+    <div class="panels">
+      <aside class="side card">
+        <div class="block">
+          <span class="badge">Derechos Básicos de Aprendizaje (síntesis)</span>
+          <p style="margin:.5rem 0 .25rem">Selección actual: <b><span id="gradoBadge">1.º</span></b></p>
+        </div>
+        <div class="dba-list" id="dbaList"></div>
+      </aside>
+      <section class="work">
+        <!-- Chat -->
+        <div class="chat card" id="chatCard">
+          <div class="chat-head">
+            <strong>Explora con NaturaBot</strong>
+            <div class="kudos">🔬 Pregunta sobre seres vivos, cuerpo humano, entorno, materia, energía o experimentos.</div>
+          </div>
+          <div class="chat-body" id="chatBody">
+            <div class="msg ai">¡Hola! Soy <b>NaturaBot</b> 🧪. Elige tu grado y pregúntame sobre ciencias: sentidos, plantas y animales, cuerpo humano, agua y clima, materia y energía, o cómo hacer un experimento seguro. Puedo hablar y escucharte. ✨</div>
+          </div>
+          <div class="inputer">
+            <input id="userIn" class="txt" placeholder="Escribe tu pregunta…" />
+            <button id="sendBtn" class="btn">Enviar</button>
+            <button id="pdfBtn" class="btn secondary">📄 Guardar PDF</button>
+            <button id="clearBtn" class="btn warn">🧹 Limpiar</button>
+          </div>
+        </div>
+        <!-- Ejercicios -->
+        <div class="exo card">
+          <div class="pane" id="exoPane">
+            <div class="badge">Practiquemos</div>
+            <p class="small">Escoge la mejor respuesta científica. ✅</p>
+            <div id="exoWrap"></div>
+          </div>
+          <div class="pane">
+            <div class="badge">Mi progreso</div>
+            <p>Intentos: <b id="tries">0</b> • Aciertos: <b id="hits">0</b> • Puntos: <b class="score" id="score">0</b></p>
+            <div style="margin-top:.5rem; display:flex; gap:.5rem; flex-wrap:wrap">
+              <button id="newSet" class="btn">🔄 Nuevos ejercicios</button>
+              <button id="hintBtn" class="btn secondary">💡 Pista</button>
+            </div>
+            <div id="hintBox" class="block" style="display:none; margin-top:.8rem"></div>
+          </div>
+        </div>
+      </section>
+    </div>
+    <div class="footer card small">
+      <div>🎨 Paleta infantil: verde, amarillo, naranja • 📱 Optimizado para Android (táctil, voz).</div>
+      <div>Hecho con ❤️ para aprender ciencias jugando.</div>
+    </div>
+  </div>
+  <script>
+    // ==========================
+    // Función para eliminar emojis y caracteres no deseados
+    // ==========================
+    function removeUnwantedChars(text) {
+      if (!text) return '';
+      // Eliminar emojis (rangos Unicode comunes)
+      text = text.replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F900}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '');
+      // Eliminar caracteres específicos: * _ - + # ?
+      text = text.replace(/[*_+\-#?]/g, '');
+      return text.trim();
+    }
+
+    // ==========================
+    // DBA/Objetivos por grado (síntesis)
+    // ==========================
+    const DBA = {
+      1:[
+        'Reconoce los cinco sentidos y cuida su cuerpo con hábitos saludables.',
+        'Identifica seres vivos y no vivos; partes de la planta (raíz, tallo, hoja).',
+        'Observa cambios del clima y el agua en su entorno.',
+        'Practica normas de seguridad en experiencias sencillas.'
+      ],
+      2:[
+        'Clasifica animales (vertebrados/invertebrados) y sus hábitats.',
+        'Describe funciones del cuerpo (alimentación, respiración, movimiento).',
+        'Diferencia sólido, líquido y gas en objetos cotidianos.',
+        'Cuida el ambiente: recicla y ahorra agua.'
+      ],
+      3:[
+        'Explica ciclos sencillos (ciclo del agua, vida de una planta).',
+        'Reconoce fuentes de energía (sol, pilas) y su uso responsable.',
+        'Mide y compara (longitud, masa, temperatura) con instrumentos básicos.',
+        'Formula preguntas y registra observaciones en tablas simples.'
+      ],
+      4:[
+        'Describe ecosistemas y relaciones entre seres vivos (cadena alimentaria).',
+        'Diferencia mezclas y soluciones; cambios físicos y químicos básicos.',
+        'Comprende fuerza y movimiento en situaciones cotidianas.',
+        'Usa pasos del método científico en pequeñas investigaciones.'
+      ],
+      5:[
+        'Analiza sistemas del cuerpo (circulatorio, respiratorio, digestivo) con funciones básicas.',
+        'Explica transformaciones de energía y su conservación en contextos simples.',
+        'Interpreta datos de experiencias (gráficas/ tablas) para sacar conclusiones.',
+        'Promueve acciones de salud y ambiente en su comunidad escolar.'
+      ]
+    };
+    const PRAISE = ['¡Excelente! ⭐','¡Súper! 🎉','¡Muy bien! ✅','¡Lo lograste! 🏅','¡Genial! 🌟'];
+    // Estado/UI helpers
+    const el = id => document.getElementById(id);
+    const gradoSel = el('gradoSel');
+    const modoSel = el('modoSel');
+    const provSel = el('provSel');
+    const modelIn = el('modelIn');
+    const apiKeyIn = el('apiKeyIn');
+    const chatBody = el('chatBody');
+    const userIn = el('userIn');
+    let stats = {tries:0, hits:0, score:0};
+    let currentSet = [];
+    let recognition = null; // STT
+    let speakingUtterance = null; // TTS
+    let vozEnabled = true;
+    function setConnPill(){
+      const online = modoSel.value === 'online';
+      el('connText').textContent = 'Modo: ' + (online? 'Online (IA)': 'Offline');
+      const dot = el('connDot'); dot.className = 'status-dot ' + (online? 'ok':'off');
+    }
+    setConnPill();
+    function renderDBA(){
+      const g = gradoSel.value; el('gradoBadge').textContent = g + '.º';
+      const list = el('dbaList'); list.innerHTML = '';
+      DBA[g].forEach(t => { const div = document.createElement('div'); div.className='dba-item'; div.textContent='• '+t; list.appendChild(div); });
+    }
+    renderDBA();
+    function addMsg(text, who='ai'){
+      const cleanedText = removeUnwantedChars(text);
+      const displayText = text.replace(/\n/g,'<br/>'); // Mantener HTML para visual, pero limpiar para voz
+      const d = document.createElement('div'); d.className='msg '+who; d.innerHTML = displayText; 
+      chatBody.appendChild(d); chatBody.scrollTop = chatBody.scrollHeight; 
+      return {element: d, cleaned: cleanedText};
+    }
+    function say(text){ 
+      try{ window.speechSynthesis.cancel(); }catch(_){ } 
+      const cleaned = removeUnwantedChars(text);
+      const u=new SpeechSynthesisUtterance(cleaned); u.lang='es-CO'; u.rate=.95; u.pitch=1.02; 
+      window.speechSynthesis.speak(u); speakingUtterance=u; 
+    }
+    function stopSay(){ try{ window.speechSynthesis.cancel(); }catch(_){ } }
+    // STT
+    function initSTT(){
+      const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if(!SR){ addMsg(' <b>Micrófono no disponible</b>. Escribe tu pregunta.','ai'); return; }
+      recognition = new SR(); recognition.lang='es-CO'; recognition.interimResults=false; recognition.onresult = (e)=>{ userIn.value = e.results[0][0].transcript; send(); };
+      recognition.onerror = ()=> addMsg(' Error de voz. Intenta de nuevo.','ai');
+      recognition.onend = ()=>{ el('micBtn').disabled=false; };
+    }
+    initSTT();
+    // ===== Ejercicios (generador local por grado) =====
+    function rand(a,b){ return Math.floor(Math.random()*(b-a+1))+a; }
+    const BANK = {
+      1:[
+        {q:'¿Cuál sentido usamos para oler una flor?', ans:'Olfato', opts:['Olfato','Vista','Oído','Gusto']},
+        {q:'Parte de la planta que absorbe agua del suelo', ans:'Raíz', opts:['Raíz','Hoja','Flor','Fruto']},
+        {q:'El sol nos da…', ans:'Luz y calor', opts:['Luz y calor','Frío','Ruido','Agua']}
+      ],
+      2:[
+        {q:'Un pez vive en el…', ans:'Hábitat acuático', opts:['Hábitat acuático','Desierto','Bosque polar','Cueva seca']},
+        {q:'Los vertebrados se caracterizan por…', ans:'Tener columna vertebral', opts:['Tener columna vertebral','No comer','No moverse','Volar siempre']},
+        {q:'¿Qué estado de la materia es el hielo?', ans:'Sólido', opts:['Sólido','Líquido','Gas','Plasma']}
+      ],
+      3:[
+        {q:'El ciclo del agua incluye evaporación, condensación y…', ans:'Precipitación', opts:['Precipitación','Combustión','Fotosíntesis','Erosión']},
+        {q:'Una planta necesita para crecer:', ans:'Agua, luz y aire', opts:['Agua, luz y aire','Solo agua','Solo tierra','Solo calor']},
+        {q:'La energía del sol es una fuente…', ans:'Renovable', opts:['Renovable','No renovable','Tóxica','Imposible']}
+      ],
+      4:[
+        {q:'En una cadena alimentaria, el pasto es un…', ans:'Productor', opts:['Productor','Consumidor','Descomponedor','Depredador']},
+        {q:'Mezclar arena y limaduras de hierro forma una…', ans:'Mezcla', opts:['Mezcla','Solución','Reacción química','Gas nuevo']},
+        {q:'Empujar un objeto es aplicar una…', ans:'Fuerza', opts:['Fuerza','Temperatura','Longitud','Energía solar']}
+      ],
+      5:[
+        {q:'El sistema que transporta sangre por el cuerpo es el…', ans:'Circulatorio', opts:['Circulatorio','Digestivo','Excretor','Óseo']},
+        {q:'La energía no se crea ni se destruye, solo se…', ans:'Transforma', opts:['Transforma','Gasta','Apaga','Pierde']},
+        {q:'Un gráfico de barras sirve para…', ans:'Comparar datos', opts:['Comparar datos','Calentar agua','Medir distancia','Hacer sonido']}
+      ]
+    };
+    function makeProblem(grado){
+      const pool = BANK[grado]; const p = pool[rand(0,pool.length-1)];
+      return {q:p.q, ans:p.ans, opts:shuffle(p.opts.slice())};
+    }
+    function shuffle(ar){ return ar.map(v=>({v, s:Math.random()})).sort((x,y)=>x.s-y.s).map(o=>o.v); }
+    function renderSet(){
+      const wrap = el('exoWrap'); wrap.innerHTML = '';
+      currentSet.forEach((p,idx)=>{
+        const card = document.createElement('div'); card.className='block';
+        card.innerHTML = `<div class="q">${idx+1}. ${p.q}</div>`;
+        const grid = document.createElement('div'); grid.className='opt';
+        p.opts.forEach(o=>{ const bt=document.createElement('button'); bt.textContent=o; bt.addEventListener('click',()=>checkAns(bt,p.answered?null:p,o)); grid.appendChild(bt); });
+        card.appendChild(grid); wrap.appendChild(card);
+      });
+    }
+    function newSet(){ const g = +gradoSel.value; currentSet = Array.from({length:6}, ()=> makeProblem(g)); renderSet(); el('hintBox').style.display='none'; }
+    function checkAns(btn, prob, chosen){ if(!prob) return; stats.tries++; el('tries').textContent=stats.tries; const ok = String(chosen)===String(prob.ans); if(ok){ stats.hits++; stats.score+=10; btn.classList.add('correct'); say(removeUnwantedChars(PRAISE[rand(0,PRAISE.length-1)]+' ✔️')); } else { btn.classList.add('wrong'); stats.score=Math.max(0, stats.score-2); } el('hits').textContent=stats.hits; el('score').textContent=stats.score; prob.answered=true; }
+    // ===== Chat (offline/online) =====
+    async function send(){
+      const txt = userIn.value.trim(); if(!txt) return; addMsg(txt,'user'); userIn.value=''; const g = gradoSel.value;
+      if(modoSel.value==='offline'){ const reply = localTutor(txt,g); const msg = addMsg(reply,'ai'); if(vozEnabled) say(msg.cleaned); return; }
+      try{
+        const provider = provSel.value; const model = modelIn.value.trim() || (provider==='gemini' ? 'gemini-2.0-flash' : 'gpt-4o-mini'); const key = apiKeyIn.value.trim(); if(!key){ addMsg(' Ingresa tu API key para usar IA en línea.','ai'); return; }
+        const prompt = buildPrompt(txt,g);
+        const answer = provider==='gemini' ? await askGemini(key, model, prompt) : await askOpenAI(key, model, prompt);
+        const msg = addMsg(answer||'No logré responder ahora.','ai'); if(vozEnabled) say(msg.cleaned);
+      }catch(e){ addMsg(' Error IA: '+e.message,'ai'); }
+    }
+    function buildPrompt(user, grado){
+      return (
+        `Eres NaturaBot, docente de Ciencias Naturales para ${grado}.º de Primaria en Colombia. `+
+        `Explica con ejemplos cotidianos: seres vivos, cuerpo humano, ambiente, agua y clima, materia y energía, y método científico. `+
+        `Da pasos seguros para experimentos caseros, incluye una pregunta final y usa emojis moderados. `+
+        `Consulta del estudiante: ${user}`
+      );
+    }
+    // Tutor local: respuestas rápidas (limpiadas)
+    function localTutor(q, grado){
+      const s=q.toLowerCase();
+      let reply = '';
+      if(s.includes('sentido')||s.includes('ojos')||s.includes('oído')||s.includes('oido')||s.includes('olfato')){
+        reply = ` <b>Los cinco sentidos</b> (g.${grado}): vista, oído, olfato, gusto y tacto.\nCuidado: lava manos, protege ojos del sol, no metas objetos en los oídos.\n¿Hacemos un juego para identificarlos?`;
+      } else if(s.includes('planta')||s.includes('fotosínt')||s.includes('fotosint')){
+        reply = ` <b>Plantas</b>: partes → raíz, tallo, hojas, flor.\nFotosíntesis: con luz solar producen su alimento.\nPrueba: pon una planta cerca y lejos de la ventana. ¿Qué observas?`;
+      } else if(s.includes('animal')||s.includes('hábitat')||s.includes('habitat')){
+        reply = ` <b>Animales y hábitats</b>: cada especie vive mejor en un lugar (agua, tierra, aire).\nRespeta a los animales y no alteres sus nidos.\n¿Clasificamos 3 animales por hábitat?`;
+      } else if(s.includes('ciclo del agua')||s.includes('evapor')||s.includes('lluvia')||s.includes('nube')){
+        reply = ` <b>Ciclo del agua</b>: el sol calienta (evaporación), el vapor forma nubes (condensación) y cae lluvia (precipitación).\nExperimento simple: tapa un vaso de agua con plástico y hielo arriba; observa “gotas”. ¿Te guío?`;
+      } else if(s.includes('materia')||s.includes('sólido')||s.includes('solido')||s.includes('líquido')||s.includes('liquido')||s.includes('gas')){
+        reply = ` <b>Estados de la materia</b>: sólido (forma fija), líquido (toma forma del recipiente), gas (se expande).\nEj.: hielo, agua, vapor.\n¿Quieres un ejercicio para clasificarlos?`;
+      } else if(s.includes('energ')||s.includes('luz')||s.includes('calor')||s.includes('fuerza')||s.includes('movim')){
+        reply = ` <b>Energía y fuerza</b>: la energía produce cambios; la fuerza empuja o jala.\nEj.: empujar una puerta, la luz del sol.\nActividad: mide cuántos libros mueve una liga (elástica). ¿Lo intentamos?`;
+      } else if(s.includes('experimento')||s.includes('método')||s.includes('metodo')){
+        reply = ` <b>Método científico</b>: 1) pregunta, 2) hipótesis, 3) prueba, 4) observa, 5) concluye.\nRegla de seguridad: usa agua y materiales no peligrosos.\n¿Te propongo uno con germinación de fríjol?`;
+      } else if(s.includes('recic')||s.includes('ambiente')||s.includes('contami')){
+        reply = ` <b>Cuidado del ambiente</b>: reduce, reutiliza, recicla.\nSepara papel, plástico y orgánicos.\nReto: “un día sin botellas”. ¿Te unes?`;
+      } else {
+        reply = ` Puedo ayudarte con sentidos, plantas, animales y hábitats, ciclo del agua, estados de la materia, energía/fuerza, experimentos y ambiente. ¿Qué tema practicamos hoy?`;
+      }
+      return reply;
+    }
+    // Llamadas IA
+    async function askGemini(apiKey, model, prompt){
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(apiKey)}`;
+      const r = await fetch(url,{method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({contents:[{parts:[{text:prompt}]}]})});
+      const j = await r.json(); if(!r.ok){ throw new Error(j.error?.message||'Gemini error'); }
+      return j.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    }
+    async function askOpenAI(apiKey, model, prompt){
+      const r = await fetch('https://api.openai.com/v1/chat/completions',{method:'POST', headers:{'Content-Type':'application/json','Authorization':`Bearer ${apiKey}`}, body:JSON.stringify({model, messages:[{role:'system',content:'Eres NaturaBot, docente de Ciencias Naturales para primaria en español.'},{role:'user',content:prompt}], temperature:0.7})});
+      const j = await r.json(); if(!r.ok){ throw new Error(j.error?.message||'OpenAI error'); }
+      return j.choices?.[0]?.message?.content || '';
+    }
+    // Eventos
+    el('sendBtn').addEventListener('click', send);
+    userIn.addEventListener('keydown', e=>{ if(e.key==='Enter') send(); });
+    el('gradoSel').addEventListener('change', ()=>{ renderDBA(); newSet(); });
+    el('modoSel').addEventListener('change', ()=>{ setConnPill(); });
+    el('vozBtn').addEventListener('click', ()=>{ const last=[...chatBody.querySelectorAll('.msg.ai')].pop(); if(!last) return; say(removeUnwantedChars(last.textContent)); });
+    el('vozStop').addEventListener('click', stopSay);
+    el('micBtn').addEventListener('click', ()=>{ if(!recognition){ initSTT(); return; } try{ recognition.start(); el('micBtn').disabled=true; }catch(_){} });
+    el('testBtn').addEventListener('click', async ()=>{ const provider=provSel.value; const model=modelIn.value.trim()||(provider==='gemini'?'gemini-2.0-flash':'gpt-4o-mini'); const key=apiKeyIn.value.trim(); if(!key){ addMsg(' Ingresa tu API key y prueba de nuevo.','ai'); return; } addMsg(' Probando conexión a '+(provider==='gemini'?'Gemini':'OpenAI')+'…','ai'); try{ const ans = provider==='gemini'? await askGemini(key, model, 'Di "ConexiónOk" en una palabra.') : await askOpenAI(key, model, 'Di "ConexiónOk" en una palabra.'); addMsg(' Respuesta de prueba: '+ans, 'ai'); }catch(e){ addMsg(' Error de prueba: '+e.message,'ai'); }});
+    el('newSet').addEventListener('click', newSet);
+    el('hintBtn').addEventListener('click', ()=>{ const g=+gradoSel.value; const tip=( g<=2 ? 'Observa con los sentidos y dibuja lo que ves. Cuida tu cuerpo.' : g==3 ? 'Registra en tablas y compara. Piensa en ciclos.' : g==4 ? 'Usa conceptos (ecosistema, mezcla) y mide con cuidado.' : 'Explica causas y efectos. Usa gráficos para justificar.' ); const cleanedTip = removeUnwantedChars(tip); const box=el('hintBox'); box.innerHTML=' <b>Pista:</b> '+tip; box.style.display='block'; say(cleanedTip); });
+    el('clearBtn').addEventListener('click', ()=>{ chatBody.innerHTML=''; addMsg(' Conversación limpiada. ¡Sigamos explorando!','ai'); });
+    // PDF
+    el('pdfBtn').addEventListener('click', ()=>{ const {jsPDF}=window.jspdf; const doc=new jsPDF({unit:'pt',format:'a4'}); let y=48; doc.setFont('helvetica','bold'); doc.setFontSize(16); doc.text('NaturaBot – Historial',300,y,{align:'center'}); y+=18; doc.setFont('helvetica','normal'); doc.setFontSize(10); doc.text(`Grado: ${gradoSel.value}.º • Fecha: ${new Date().toLocaleString()}`,40,y); y+=20; const blocks=[...chatBody.querySelectorAll('.msg')].map(m=>(m.classList.contains('user')?'Estudiante: ':'NaturaBot: ')+removeUnwantedChars(m.textContent.trim())); blocks.forEach(t=>{ const lines=doc.splitTextToSize(t,515); if(y+lines.length*14>780){ doc.addPage(); y=40; } doc.text(lines,40,y); y+=lines.length*14+8; }); y+=10; if(y>780){ doc.addPage(); y=40; } doc.setFont('helvetica','bold'); doc.text('Progreso',40,y); y+=14; doc.setFont('helvetica','normal'); doc.text(`Intentos: ${stats.tries} • Aciertos: ${stats.hits} • Puntos: ${stats.score}`,40,y); doc.save('NaturaBot_historial.pdf'); addMsg(' PDF exportado. ¡Bien!','ai'); });
+    // Inicial
+    function start(){ renderDBA(); newSet(); }
+    start();
+  </script>
+</body>
+</html>
